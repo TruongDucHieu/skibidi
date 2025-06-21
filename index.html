@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ lý Y tế AI - Tra cứu thuốc</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .main-button {
+            transition: all 0.3s ease;
+        }
+        .main-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .view {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+        .user-bubble {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        .ai-bubble {
+            background-color: #e9ecef;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app" class="max-w-4xl mx-auto p-4 md:p-6 min-h-screen flex flex-col">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600">
+                <span class="text-green-500">⚕️</span> Trợ lý Y tế AI
+            </h1>
+            <p class="text-gray-500 mt-2">Tra cứu thuốc và tư vấn sức khỏe thông minh</p>
+        </header>
+
+        <div id="main-menu" class="view" style="display: block;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button onclick="showView('text-lookup-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-blue-50">
+                    <div class="text-4xl mb-4">💊</div>
+                    <h2 class="text-2xl font-bold text-blue-700">Tra cứu thông tin thuốc</h2>
+                    <p class="text-gray-600 mt-2">Nhập tên thuốc để xem chi tiết công dụng, liều dùng và lưu ý.</p>
+                </button>
+                
+                <button onclick="showView('ai-chat-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-green-50">
+                    <div class="text-4xl mb-4">👨‍⚕️</div>
+                    <h2 class="text-2xl font-bold text-green-700">Trò chuyện với Bác sĩ AI</h2>
+                    <p class="text-gray-600 mt-2">Hỏi đáp về các triệu chứng và nhận lời khuyên sức khỏe ban đầu.</p>
+                </button>
+
+                <button onclick="showView('image-lookup-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-indigo-50">
+                    <div class="text-4xl mb-4">📸</div>
+                    <h2 class="text-2xl font-bold text-indigo-700">Tra cứu bằng hình ảnh</h2>
+                    <p class="text-gray-600 mt-2">Chụp ảnh hộp thuốc để AI nhận diện và cung cấp thông tin.</p>
+                </button>
+
+                <button onclick="showView('copyright-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-gray-100">
+                    <div class="text-4xl mb-4">©️</div>
+                    <h2 class="text-2xl font-bold text-gray-700">Bản quyền</h2>
+                    <p class="text-gray-600 mt-2">Thông tin về đơn vị phát triển ứng dụng.</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="text-lookup-view" class="view flex-grow flex flex-col">
+            <button onclick="showView('main-menu')" class="mb-4 text-blue-600 hover:underline">&larr; Quay lại trang chủ</button>
+            <h2 class="text-3xl font-bold mb-4">💊 Tra cứu thông tin thuốc</h2>
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <input id="drug-name-input" type="text" placeholder="Nhập tên thuốc, ví dụ: Paracetamol" class="flex-grow p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <button id="lookup-drug-btn" onclick="lookupDrug()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                    Tra cứu
+                </button>
+            </div>
+            <div id="text-lookup-result" class="bg-white p-6 rounded-lg shadow-inner flex-grow overflow-y-auto">
+                <p class="text-gray-500">Kết quả tra cứu sẽ hiển thị ở đây...</p>
+            </div>
+        </div>
+
+        <div id="ai-chat-view" class="view flex-grow flex flex-col">
+            <button onclick="showView('main-menu')" class="mb-4 text-green-600 hover:underline">&larr; Quay lại trang chủ</button>
+            <h2 class="text-3xl font-bold mb-4">👨‍⚕️ Trò chuyện với Bác sĩ AI</h2>
+            <div id="chat-window" class="flex-grow bg-white p-4 rounded-lg shadow-inner overflow-y-auto h-96 flex flex-col space-y-4 mb-4">
+                <div class="chat-bubble ai-bubble">
+                    Chào bạn! Tôi là bác sĩ AI, rất vui được trò chuyện và lắng nghe bạn. Bạn đang có băn khoăn hay vấn đề sức khỏe nào cần tôi tư vấn không? Hãy cứ thoải mái chia sẻ nhé! Tôi sẽ cố gắng hết sức để đưa ra những lời khuyên hữu ích và dễ hiểu nhất cho bạn. À, bạn nhớ nhé, những thông tin tôi chia sẻ chỉ mang tính tham khảo thôi, nếu cần chẩn đoán chính xác và điều trị chuyên sâu, bạn hãy tìm gặp bác sĩ chuyên khoa để được thăm khám trực tiếp nha!
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <input id="chat-input" type="text" placeholder="Nhập câu hỏi của bạn..." class="flex-grow p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                <button id="send-chat-btn" onclick="sendChatMessage()" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                    Gửi
+                </button>
+            </div>
+        </div>
+
+        <div id="image-lookup-view" class="view flex-grow flex flex-col">
+            <button onclick="showView('main-menu')" class="mb-4 text-indigo-600 hover:underline">&larr; Quay lại trang chủ</button>
+            <h2 class="text-3xl font-bold mb-4">📸 Tra cứu thuốc bằng hình ảnh</h2>
+            <div class="bg-white p-6 rounded-lg shadow-inner mb-4 text-center">
+                 <input type="file" id="image-upload-input" class="hidden" accept="image/*" onchange="previewImage(event)">
+                 <label for="image-upload-input" class="cursor-pointer bg-indigo-100 text-indigo-700 font-semibold py-3 px-5 rounded-lg border-2 border-dashed border-indigo-300 hover:bg-indigo-200 transition-colors duration-300">
+                     Chọn hoặc kéo thả ảnh vào đây
+                 </label>
+                 <img id="image-preview" class="mt-4 max-h-60 mx-auto rounded-lg hidden"/>
+            </div>
+            <button id="lookup-image-btn" onclick="lookupByImage()" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors duration-300 disabled:bg-gray-400" disabled>
+                Phân tích ảnh
+            </button>
+            <div id="image-lookup-result" class="bg-white p-6 rounded-lg shadow-inner mt-4 flex-grow overflow-y-auto">
+                 <p class="text-gray-500">Kết quả phân tích hình ảnh sẽ hiển thị ở đây...</p>
+            </div>
+        </div>
+
+        <div id="copyright-view" class="view text-center flex-grow flex flex-col justify-center items-center">
+             <button onclick="showView('main-menu')" class="mb-4 text-gray-600 hover:underline">&larr; Quay lại trang chủ</button>
+            <div class="text-5xl mb-4">📜</div>
+            <h2 class="text-3xl font-bold mb-2">Thông tin bản quyền</h2>
+            <p class="text-gray-700 text-lg">Ứng dụng này được phát triển và giữ bản quyền bởi:</p>
+            <p class="font-bold text-xl mt-4">Trương Đức Hiếu</p>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const API_KEY = "AIzaSyBNpyTvc92NOnO_08P_0ADTzIkIJcQg3wA"; // Leave blank, Canvas will handle it.
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        
+        // --- State Management ---
+        let chatHistory = [
+            {
+                role: "user",
+                parts: [{ text: "Hãy đóng vai là một bác sĩ tận tâm, chân thực, thân thiện, vui vẻ và luôn đưa ra những lời khuyên hữu ích như một vị bác sĩ thực thụ. Khi bắt đầu cuộc trò chuyện, hãy thể hiện sự quan tâm và chào hỏi một cách tự nhiên. Luôn nhấn mạnh rằng thông tin bạn cung cấp chỉ mang tính tham khảo và người dùng nên tham khảo ý kiến bác sĩ chuyên khoa để có chẩn đoán chính xác. Đồng thời, hãy sử dụng ngôn ngữ tự nhiên, gần gũi, tránh ngôn ngữ quá máy móc hay khô khan." }]
+            },
+            {
+                role: "model",
+                parts: [{ text: "Chào bạn! Tôi là bác sĩ AI, rất vui được trò chuyện và lắng nghe bạn. Bạn đang có băn khoăn hay vấn đề sức khỏe nào cần tôi tư vấn không? Hãy cứ thoải mái chia sẻ nhé! Tôi sẽ cố gắng hết sức để đưa ra những lời khuyên hữu ích và dễ hiểu nhất cho bạn. À, bạn nhớ nhé, những thông tin tôi chia sẻ chỉ mang tính tham khảo thôi, nếu cần chẩn đoán chính xác và điều trị chuyên sâu, bạn hãy tìm gặp bác sĩ chuyên khoa để được thăm khám trực tiếp nha!" }]
+            }
+        ];
+        let base64Image = null;
+
+        // --- UI Control ---
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(view => {
+                view.style.display = 'none';
+            });
+            document.getElementById(viewId).style.display = 'flex';
+            if (viewId === 'main-menu') {
+                 document.getElementById('main-menu').style.display = 'block';
+            }
+        }
+        
+        function showLoader(resultElementId) {
+            const resultDiv = document.getElementById(resultElementId);
+            resultDiv.innerHTML = '<div class="loader"></div><p class="text-center text-gray-500">AI đang phân tích, vui lòng chờ trong giây lát...</p>';
+        }
+
+        function renderMarkdown(elementId, text) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = marked.parse(text);
+        }
+
+        // --- API Call Logic ---
+        async function callGemini(payload) {
+             try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("API Error:", errorData);
+                    throw new Error(`API request failed: ${errorData.error.message}`);
+                }
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0) {
+                     return result.candidates[0].content.parts[0].text;
+                } else {
+                     throw new Error("Không nhận được phản hồi hợp lệ từ AI.");
+                }
+             } catch(error) {
+                console.error("Fetch Error:", error);
+                return `Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại.`;
+             }
+        }
+        
+        // --- Feature 1: Text Lookup ---
+        async function lookupDrug() {
+            const drugName = document.getElementById('drug-name-input').value.trim();
+            if (!drugName) {
+                alert("Vui lòng nhập tên thuốc.");
+                return;
+            }
+            
+            showLoader('text-lookup-result');
+            const prompt = `Cung cấp thông tin chi tiết về thuốc "${drugName}" bằng tiếng Việt, theo cấu trúc Markdown sau:
+                 ------------------------ 💊 Thông tin chung ------------------------
+                (Mô tả ngắn gọn về thuốc, hoạt chất chính)
+                 ------------------------ ✅ Công dụng  ------------------------
+                (Liệt kê các công dụng chính)
+                 ------------------------ 📝 Hướng dẫn sử dụng ------------------------
+                (Cách dùng, liều lượng cho người lớn, trẻ em nếu có)
+                 ------------------------ 👨‍👩‍👧‍👦 Đối tượng sử dụng ------------------------
+                (Ai nên và không nên dùng thuốc)
+                 ------------------------ ⚠️ Lưu ý và khuyến cáo ------------------------
+                (Các tác dụng phụ, tương tác thuốc và những cảnh báo quan trọng khác)`;
+            
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            const resultText = await callGemini(payload);
+            renderMarkdown('text-lookup-result', resultText);
+        }
+
+        // --- Feature 2: AI Chat ---
+        async function sendChatMessage() {
+            const userInput = document.getElementById('chat-input').value.trim();
+            if (!userInput) return;
+
+            const chatWindow = document.getElementById('chat-window');
+
+            // Add user message to UI
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble user-bubble';
+            userBubble.textContent = userInput;
+            chatWindow.appendChild(userBubble);
+            
+            // Add to history
+            chatHistory.push({ role: "user", parts: [{ text: userInput }] });
+            
+            document.getElementById('chat-input').value = '';
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'chat-bubble ai-bubble';
+            typingIndicator.innerHTML = '<span class="italic">Bác sĩ AI đang soạn tin...</span>';
+            chatWindow.appendChild(typingIndicator);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+
+            // Get AI response
+            const payload = { contents: chatHistory };
+            const aiResponseText = await callGemini(payload);
+            
+            // Add to history
+            chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+
+            // Remove typing indicator and show AI response
+            chatWindow.removeChild(typingIndicator);
+            const aiBubble = document.createElement('div');
+            aiBubble.className = 'chat-bubble ai-bubble';
+            aiBubble.innerHTML = marked.parse(aiResponseText);
+            chatWindow.appendChild(aiBubble);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+        
+        // --- Feature 3: Image Lookup ---
+        function previewImage(event) {
+            const reader = new FileReader();
+            const imagePreview = document.getElementById('image-preview');
+            const lookupBtn = document.getElementById('lookup-image-btn');
+            
+            reader.onload = function(){
+                imagePreview.src = reader.result;
+                imagePreview.classList.remove('hidden');
+                base64Image = reader.result.split(',')[1]; // Get base64 data
+                lookupBtn.disabled = false;
+            };
+            
+            if (event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+        
+        async function lookupByImage() {
+            if (!base64Image) {
+                alert("Vui lòng chọn một hình ảnh trước.");
+                return;
+            }
+
+            showLoader('image-lookup-result');
+            const prompt = `Phân tích hình ảnh này. Xác định tên thuốc (nếu có thể) và cung cấp thông tin chi tiết về nó bằng tiếng Việt theo cấu trúc Markdown tương tự như tra cứu bằng văn bản: Thông tin chung, Công dụng, Hướng dẫn sử dụng, Đối tượng sử dụng, và Lưu ý/khuyến cáo. Nếu không thể xác định được thuốc, hãy thông báo cho người dùng.`;
+            
+            const payload = {
+                contents: [
+                    {
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ]
+                    }
+                ]
+            };
+            const resultText = await callGemini(payload);
+            renderMarkdown('image-lookup-result', resultText);
+        }
+
+        // Add keypress listeners for better UX
+        document.getElementById('drug-name-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                lookupDrug();
+            }
+        });
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+
+    </script>
+</body>
+</html>
