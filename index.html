@@ -14,10 +14,13 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
-        /* Custom styles */
+        /* === PHẦN CHỈNH SỬA 1: CSS CHO BODY ĐỂ TẠO STICKY FOOTER === */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         .main-button {
             transition: all 0.3s ease;
@@ -100,7 +103,6 @@
             margin-bottom: 0.5rem;
             line-height: 1.6;
         }
-        /* Thêm mới: CSS cho khu vực xem trước nhiều ảnh */
         #image-preview-container {
             display: flex;
             flex-wrap: wrap;
@@ -115,34 +117,37 @@
             object-fit: cover;
         }
 
-        /* CSS cho các emoji trang trí */
-        .decorative-left, .decorative-right {
-            position: fixed; /* Hoặc absolute nếu muốn cuộn cùng trang */
-            top: 50%;
+        .decorative-emoji {
+            position: fixed;
             transform: translateY(-50%);
-            font-size: 4rem; /* Kích thước emoji lớn */
-            opacity: 0.2; /* Làm mờ để không quá nổi bật */
-            pointer-events: none; /* Không cho phép tương tác với chuột */
-            z-index: -1; /* Đặt ra phía sau nội dung chính */
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: -1;
         }
-        .decorative-left {
-            left: 20px; /* Khoảng cách từ lề trái */
-        }
-        .decorative-right {
-            right: 20px; /* Khoảng cách từ lề phải */
-        }
+        .emoji-1 { top: 50%; left: 20px; font-size: 4rem; }
+        .emoji-2 { top: 50%; right: 20px; font-size: 4rem; }
+        .emoji-3 { top: 20%; left: 60px; font-size: 3rem; opacity: 0.15; transform: translateY(-50%) rotate(-15deg); }
+        .emoji-4 { top: 85%; left: 40px; font-size: 5rem; opacity: 0.18; transform: translateY(-50%) rotate(10deg); }
+        .emoji-5 { top: 25%; right: 50px; font-size: 4.5rem; opacity: 0.2; transform: translateY(-50%) rotate(20deg); }
+        .emoji-6 { top: 78%; right: 70px; font-size: 3.5rem; opacity: 0.16; transform: translateY(-50%) rotate(-5deg); }
+        
         @media (max-width: 768px) {
-            .decorative-left, .decorative-right {
-                display: none; /* Ẩn đi trên màn hình nhỏ */
+            .decorative-emoji {
+                display: none;
             }
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
-    <div class="decorative-left">💊</div>
-    <div class="decorative-right">👨‍⚕️</div>
+    <div class="decorative-emoji emoji-1">💊</div>
+    <div class="decorative-emoji emoji-2">👨‍⚕️</div>
+    <div class="decorative-emoji emoji-3">🩺</div>
+    <div class="decorative-emoji emoji-4">🧪</div>
+    <div class="decorative-emoji emoji-5">❤️</div>
+    <div class="decorative-emoji emoji-6">🩹</div>
 
-    <div id="app" class="max-w-4xl mx-auto p-4 md:p-6 min-h-screen flex flex-col">
+
+    <div id="app" class="max-w-4xl mx-auto p-4 md:p-6 flex flex-col flex-grow w-full">
         <header class="text-center mb-8">
             <h1 class="text-4xl md:text-5xl font-bold text-blue-600">
                 <span class="text-green-500">⚕️</span> Trợ lý Y tế AI
@@ -235,7 +240,7 @@
         </div>
     </div>
 
-    <footer class="bg-black text-white text-center p-4 mt-8">
+    <footer class="bg-black text-white text-center p-4">
         <p>&copy; 2025 Trợ lý Y tế AI. Phát triển bởi Trương Đức Hiếu.</p>
     </footer>
 
