@@ -3,266 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ lý Y tế AI - Tra cứu thuốc</title>
+    <title>Trợ lý Y tế AI</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            background-image: radial-gradient(#dbeafe 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-        .main-button {
-            transition: all 0.3s ease;
-        }
-        .main-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
+
+        /* --- Custom Styles & Enhancements --- */
         .view {
             display: none;
-            animation: fadeIn 0.5s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 1.5rem; /* Increased border-radius */
         }
+        .main-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        /* Gradient Borders */
+        .gradient-border {
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            z-index: -1;
+            margin: -2px; 
+            border-radius: inherit;
+            background: linear-gradient(145deg, #3b82f6, #10b981, #8b5cf6);
+        }
+
+        /* Enhanced Chat Bubbles */
         .chat-bubble {
             max-width: 80%;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 20px;
             margin-bottom: 10px;
             word-wrap: break-word;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: bubble-in 0.5s forwards;
         }
+        @keyframes bubble-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .user-bubble {
-            background-color: #007bff;
+            background-image: linear-gradient(to right, #3b82f6, #2563eb);
             color: white;
             align-self: flex-end;
             border-bottom-right-radius: 5px;
         }
         .ai-bubble {
-            background-color: #e9ecef;
+            background-color: #ffffff;
             color: #333;
             align-self: flex-start;
             border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        .ai-bubble.typing {
+            font-style: italic;
+            color: #6b7280;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .lookup-result-content h1 { font-size: 1.75rem; font-weight: 700; color: #1e40af; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
-        .lookup-result-content h2 { font-size: 1.25rem; font-weight: 600; color: #1d4ed8; margin-top: 1.5rem; margin-bottom: 0.75rem; }
-        .lookup-result-content ul { list-style-type: disc; padding-left: 1.75rem; margin-bottom: 1rem; line-height: 1.6; }
-        .lookup-result-content li { margin-bottom: 0.5rem; }
+
+        /* Result Content Styling */
+        .lookup-result-content h1 { font-size: 1.8rem; font-weight: 800; color: #1e3a8a; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+        .lookup-result-content h2 { font-size: 1.3rem; font-weight: 700; color: #1d4ed8; margin-top: 2rem; margin-bottom: 0.75rem; }
+        .lookup-result-content ul { list-style-type: none; padding-left: 0; }
+        .lookup-result-content li { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%2310b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>') no-repeat left center; padding-left: 28px; margin-bottom: 0.75rem; line-height: 1.6; }
         .lookup-result-content strong { color: #1f2937; font-weight: 600; }
         .lookup-result-content p { margin-bottom: 0.5rem; line-height: 1.6; }
-        #image-preview-container { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1rem; }
-        #image-preview-container img { max-height: 10rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); object-fit: cover; }
-        .decorative-emoji { position: fixed; transform: translateY(-50%); opacity: 0.2; pointer-events: none; z-index: -1; }
-        .emoji-1 { top: 50%; left: 20px; font-size: 4rem; }
-        .emoji-2 { top: 50%; right: 20px; font-size: 4rem; }
-        .emoji-3 { top: 20%; left: 60px; font-size: 3rem; opacity: 0.15; transform: translateY(-50%) rotate(-15deg); }
-        .emoji-4 { top: 85%; left: 40px; font-size: 5rem; opacity: 0.18; transform: translateY(-50%) rotate(10deg); }
-        .emoji-5 { top: 25%; right: 50px; font-size: 4.5rem; opacity: 0.2; transform: translateY(-50%) rotate(20deg); }
-        .emoji-6 { top: 78%; right: 70px; font-size: 3.5rem; opacity: 0.16; transform: translateY(-50%) rotate(-5deg); }
-        @media (max-width: 768px) { .decorative-emoji { display: none; } }
+        .lookup-result-content code { background-color: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 6px; font-family: monospace; }
+        
+        /* Image Preview */
+        #image-preview-container { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
+        #image-preview-container .img-wrapper { position: relative; }
+        #image-preview-container img { height: 10rem; width: 10rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); object-fit: cover; border: 2px solid transparent; transition: all 0.2s ease; }
+        #image-preview-container img:hover { transform: scale(1.05); border-color: #6366f1; }
+        
+        /* Modal Animation */
+        .animate-modal-scale-in {
+            animation: modal-scale-in 0.5s cubic-bezier(0.165, 0.840, 0.440, 1.000) both;
+        }
+        @keyframes modal-scale-in {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
 
-        /* === PHẦN CSS MỚI === */
-        #app {
-            display: none; /* Ẩn giao diện chính ban đầu */
+        /* Professional Input Fields */
+        .pro-input {
+            border: 1px solid #d1d5db;
+            transition: all 0.3s;
         }
-        .modal-glow {
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.2);
+        .pro-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
-        .animate-modal-fade-in {
-            animation: modal-fade-in 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+
+        /* Professional Buttons */
+        .pro-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        @keyframes modal-fade-in {
-            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+        .pro-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1);
+        }
+        .pro-btn:active {
+            transform: translateY(0);
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-100 text-gray-800">
 
-    <div id="welcome-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-11/12 text-center modal-glow animate-modal-fade-in">
-            <div class="text-6xl mb-4">⚕️</div>
-            <h2 class="text-2xl font-bold text-blue-700 mb-3">Lưu ý quan trọng</h2>
+    <div id="welcome-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-modal-scale-in">
+            <lottie-player src="https://lottie.host/0c973623-a523-45aa-9782-d6b33b7aaa4e/7RZ7RZ57x7.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: 0 auto;" loop autoplay></lottie-player>
+            <h2 class="text-3xl font-bold text-blue-700 mb-3">Lưu ý Quan Trọng</h2>
             <p class="text-gray-600 mb-6">
-                Thông tin và các lời khuyên từ "Trợ lý Y tế AI" chỉ mang tính chất tham khảo, không thể thay thế cho chẩn đoán và chỉ định điều trị của bác sĩ chuyên khoa.
+                Thông tin từ "Trợ lý Y tế AI" chỉ mang tính chất tham khảo, <strong>không thay thế</strong> cho chẩn đoán và chỉ định của bác sĩ.
                 <br><br>
-                Hãy luôn tìm đến cơ sở y tế để được tư vấn chính xác nhất.
+                Vui lòng đến cơ sở y tế để nhận tư vấn chính xác nhất.
             </p>
-            <button onclick="acceptDisclaimer()" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
-                Tôi đã hiểu
+            <button onclick="acceptDisclaimer()" class="pro-btn bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 w-full md:w-auto">
+                Tôi đã hiểu và đồng ý
             </button>
         </div>
     </div>
-
-    <div class="decorative-emoji emoji-1">💊</div>
-    <div class="decorative-emoji emoji-2">👨‍⚕️</div>
-    <div class="decorative-emoji emoji-3">🩺</div>
-    <div class="decorative-emoji emoji-4">🧪</div>
-    <div class="decorative-emoji emoji-5">💉</div>
-    <div class="decorative-emoji emoji-6">🩹</div>
-
-    <div id="app" class="max-w-4xl mx-auto p-4 md:p-6 flex flex-col flex-grow w-full">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-blue-600">
-                <span class="text-green-500">⚕️</span> Trợ lý Y tế AI
+    
+    <div id="app" class="max-w-5xl mx-auto p-4 md:p-6 flex flex-col flex-grow w-full">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500 py-2">
+                Trợ lý Y tế AI
             </h1>
-            <p class="text-gray-500 mt-2">Tra cứu thuốc và tư vấn sức khỏe thông minh</p>
+            <p class="text-gray-500 mt-2 text-lg">Nền tảng tra cứu thuốc và tư vấn sức khỏe thông minh</p>
         </header>
 
         <div id="main-menu" class="view">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button onclick="showView('text-lookup-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-blue-50">
-                    <div class="text-4xl mb-4">💊</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <button onclick="showView('text-lookup-view')" class="main-card p-8 text-left group">
+                    <lottie-player src="https://lottie.host/38382a88-3596-49f4-9878-e1b1149a8395/129xXoMyvW.json" background="transparent" speed="1" style="width: 100px; height: 100px; margin-bottom: 1rem;" loop autoplay></lottie-player>
                     <h2 class="text-2xl font-bold text-blue-700">Tra cứu thông tin thuốc</h2>
                     <p class="text-gray-600 mt-2">Nhập tên thuốc để xem chi tiết công dụng, liều dùng và lưu ý.</p>
                 </button>
                 
-                <button onclick="showView('ai-chat-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-green-50">
-                    <div class="text-4xl mb-4">👨‍⚕️</div>
+                <button onclick="showView('ai-chat-view')" class="main-card p-8 text-left group">
+                    <lottie-player src="https://assets9.lottiefiles.com/packages/lf20_vPnn3K.json" background="transparent" speed="1" style="width: 100px; height: 100px; margin-bottom: 1rem;" loop autoplay></lottie-player>
                     <h2 class="text-2xl font-bold text-green-700">Trò chuyện với Bác sĩ AI</h2>
-                    <p class="text-gray-600 mt-2">Hỏi đáp về các triệu chứng và nhận lời khuyên sức khỏe ban đầu.</p>
+                    <p class="text-gray-600 mt-2">Hỏi đáp về triệu chứng và nhận lời khuyên sức khỏe ban đầu.</p>
                 </button>
 
-                <button onclick="showView('image-lookup-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-indigo-50">
-                    <div class="text-4xl mb-4">📸</div>
+                <button onclick="showView('image-lookup-view')" class="main-card p-8 text-left group">
+                    <lottie-player src="https://lottie.host/f61f9fda-34c3-4200-a031-03cbe68011cd/e8DTjYj8hL.json" background="transparent" speed="1" style="width: 100px; height: 100px; margin-bottom: 1rem;" loop autoplay></lottie-player>
                     <h2 class="text-2xl font-bold text-indigo-700">Tra cứu bằng hình ảnh</h2>
                     <p class="text-gray-600 mt-2">Chụp ảnh hộp thuốc để AI nhận diện và cung cấp thông tin.</p>
                 </button>
 
-                <button onclick="showView('copyright-view')" class="main-button bg-white p-8 rounded-2xl shadow-lg text-left hover:bg-gray-100">
-                    <div class="text-4xl mb-4">©️</div>
-                    <h2 class="text-2xl font-bold text-gray-700">Bản quyền</h2>
-                    <p class="text-gray-600 mt-2">Thông tin về đơn vị phát triển ứng dụng.</p>
+                <button onclick="showView('copyright-view')" class="main-card p-8 text-left group">
+                    <lottie-player src="https://lottie.host/93c183f4-f0ad-4331-b02b-7c52b1d47263/mQsl6EePvt.json" background="transparent" speed="1" style="width: 100px; height: 100px; margin-bottom: 1rem;" loop autoplay></lottie-player>
+                    <h2 class="text-2xl font-bold text-gray-700">Thông tin & Bản quyền</h2>
+                    <p class="text-gray-600 mt-2">Chi tiết về đơn vị phát triển ứng dụng.</p>
                 </button>
             </div>
         </div>
+        
+        <div class="view-container bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200/50" style="display: none;">
+            </div>
 
-        <div id="text-lookup-view" class="view flex-grow flex flex-col">
-            <button onclick="showView('main-menu')" class="mb-4 text-blue-600 hover:underline">&larr; Quay lại trang chủ</button>
-            <h2 class="text-3xl font-bold mb-4">💊 Tra cứu thông tin thuốc</h2>
+        <template id="text-lookup-view-template">
+            <button onclick="showView('main-menu')" class="mb-6 text-blue-600 hover:underline font-semibold">&larr; Quay lại trang chủ</button>
+            <h2 class="text-3xl font-bold mb-6 text-blue-800">💊 Tra cứu thông tin thuốc</h2>
             <div class="flex flex-col md:flex-row gap-4 mb-4">
-                <input id="drug-name-input" type="text" placeholder="Nhập tên thuốc, ví dụ: Paracetamol" class="flex-grow p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <button id="lookup-drug-btn" onclick="lookupDrug()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                <input id="drug-name-input" type="text" placeholder="Nhập tên thuốc, ví dụ: Paracetamol" class="flex-grow p-3 border rounded-lg pro-input">
+                <button id="lookup-drug-btn" onclick="lookupDrug()" class="pro-btn bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700">
                     Tra cứu
                 </button>
             </div>
-            <div id="text-lookup-result" class="bg-white p-6 rounded-lg shadow-inner flex-grow overflow-y-auto break-words lookup-result-content">
+            <div id="text-lookup-result" class="bg-gray-50 p-6 rounded-lg shadow-inner flex-grow overflow-y-auto break-words lookup-result-content min-h-[300px]">
                 <p class="text-gray-500">Kết quả tra cứu sẽ hiển thị ở đây...</p>
             </div>
-        </div>
-
-        <div id="ai-chat-view" class="view flex-grow flex flex-col">
-            <button onclick="showView('main-menu')" class="mb-4 text-green-600 hover:underline">&larr; Quay lại trang chủ</button>
-            <h2 class="text-3xl font-bold mb-4">👨‍⚕️ Trò chuyện với Bác sĩ AI</h2>
-            <div id="chat-window" class="flex-grow bg-white p-4 rounded-lg shadow-inner overflow-y-auto h-96 flex flex-col space-y-4 mb-4">
-                <div class="chat-bubble ai-bubble">
-                    Chào bạn! Tôi là bác sĩ AI, rất vui được trò chuyện và lắng nghe bạn. Bạn đang có băn khoăn hay vấn đề sức khỏe nào cần tôi tư vấn không? Hãy cứ thoải mái chia sẻ nhé! Tôi sẽ cố gắng hết sức để đưa ra những lời khuyên hữu ích và dễ hiểu nhất cho bạn. À, bạn nhớ nhé, những thông tin tôi chia sẻ chỉ mang tính tham khảo thôi, nếu cần chẩn đoán chính xác và điều trị chuyên sâu, bạn hãy tìm gặp bác sĩ chuyên khoa để được thăm khám trực tiếp nha!
+        </template>
+        
+        <template id="ai-chat-view-template">
+             <button onclick="showView('main-menu')" class="mb-6 text-green-600 hover:underline font-semibold">&larr; Quay lại trang chủ</button>
+            <h2 class="text-3xl font-bold mb-4 text-green-800">👨‍⚕️ Trò chuyện với Bác sĩ AI</h2>
+            <div id="chat-window" class="flex-grow bg-gray-50 p-4 rounded-lg shadow-inner overflow-y-auto h-96 flex flex-col space-y-4 mb-4">
                 </div>
-            </div>
             <div class="flex gap-4">
-                <input id="chat-input" type="text" placeholder="Nhập câu hỏi của bạn..." class="flex-grow p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
-                <button id="send-chat-btn" onclick="sendChatMessage()" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                <input id="chat-input" type="text" placeholder="Nhập câu hỏi của bạn..." class="flex-grow p-3 border rounded-lg pro-input focus:ring-green-500 focus:border-green-500">
+                <button id="send-chat-btn" onclick="sendChatMessage()" class="pro-btn bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700">
                     Gửi
                 </button>
             </div>
-        </div>
-
-        <div id="image-lookup-view" class="view flex-grow flex flex-col">
-            <button onclick="showView('main-menu')" class="mb-4 text-indigo-600 hover:underline">&larr; Quay lại trang chủ</button>
-            <h2 class="text-3xl font-bold mb-4">📸 Tra cứu thuốc bằng hình ảnh</h2>
-            <div class="bg-white p-6 rounded-lg shadow-inner mb-4 text-center">
+        </template>
+        
+        <template id="image-lookup-view-template">
+            <button onclick="showView('main-menu')" class="mb-6 text-indigo-600 hover:underline font-semibold">&larr; Quay lại trang chủ</button>
+            <h2 class="text-3xl font-bold mb-4 text-indigo-800">📸 Tra cứu thuốc bằng hình ảnh</h2>
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner mb-4 text-center">
                  <input type="file" id="image-upload-input" class="hidden" accept="image/*" onchange="previewImage(event)" multiple>
                  <label for="image-upload-input" class="cursor-pointer bg-indigo-100 text-indigo-700 font-semibold py-3 px-5 rounded-lg border-2 border-dashed border-indigo-300 hover:bg-indigo-200 transition-colors duration-300">
                      Chọn một hoặc nhiều ảnh
                  </label>
                  <div id="image-preview-container"></div>
             </div>
-            <button id="lookup-image-btn" onclick="lookupByImage()" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors duration-300 disabled:bg-gray-400" disabled>
+            <button id="lookup-image-btn" onclick="lookupByImage()" class="w-full pro-btn bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:shadow-none disabled:transform-none" disabled>
                 Phân tích ảnh
             </button>
-            <div id="image-lookup-result" class="bg-white p-6 rounded-lg shadow-inner mt-4 flex-grow overflow-y-auto break-words lookup-result-content">
+            <div id="image-lookup-result" class="bg-gray-50 p-6 rounded-lg shadow-inner mt-4 flex-grow overflow-y-auto break-words lookup-result-content min-h-[300px]">
                  <p class="text-gray-500">Kết quả phân tích hình ảnh sẽ hiển thị ở đây...</p>
             </div>
-        </div>
+        </template>
 
-        <div id="copyright-view" class="view text-center flex-grow flex flex-col justify-center items-center">
-             <button onclick="showView('main-menu')" class="mb-4 text-gray-600 hover:underline">&larr; Quay lại trang chủ</button>
-            <div class="text-5xl mb-4">📜</div>
-            <h2 class="text-3xl font-bold mb-2">Thông tin bản quyền</h2>
-            <p class="text-gray-700 text-lg">Ứng dụng này được phát triển và giữ bản quyền bởi:</p>
-            <p class="font-bold text-xl mt-4">Trương Đức Hiếu & Nguyễn Duy Hưng</p>
-        </div>
+        <template id="copyright-view-template">
+             <button onclick="showView('main-menu')" class="mb-6 text-gray-600 hover:underline font-semibold">&larr; Quay lại trang chủ</button>
+            <div class="text-center">
+                <lottie-player src="https://lottie.host/93c183f4-f0ad-4331-b02b-7c52b1d47263/mQsl6EePvt.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: 0 auto 1rem;" loop autoplay></lottie-player>
+                <h2 class="text-3xl font-bold mb-2">Thông tin Bản quyền</h2>
+                <p class="text-gray-700 text-lg">Ứng dụng này được phát triển và giữ bản quyền bởi:</p>
+                <p class="font-bold text-2xl mt-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Trương Đức Hiếu & Nguyễn Duy Hưng</p>
+            </div>
+        </template>
     </div>
 
-    <footer class="bg-black text-white text-center p-4">
-        <p>&copy; 2025 Trợ lý Y tế AI. Phát triển bởi Trương Đức Hiếu & Nguyễn Duy Hưng.</p>
+    <footer class="text-center p-4 mt-auto">
+        <p class="text-gray-500">&copy; 2025 Trợ lý Y tế AI. Phát triển bởi Trương Đức Hiếu & Nguyễn Duy Hưng.</p>
     </footer>
 
     <script>
         // --- Configuration ---
-        const API_KEY = "AIzaSyBNpyTvc92NOnO_08P_0ADTzIkIJcQg3wA"; // Leave blank, Canvas will handle it.
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        const API_KEY = "AIzaSyBNpyTvc92NOnO_08P_0ADTzIkIJcQg3wA"; // !!! QUAN TRỌNG: Thay thế bằng API Key của bạn
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
         
         // --- State Management ---
-        let chatHistory = [
-            { role: "user", parts: [{ text: "Hãy đóng vai là một bác sĩ tận tâm, chân thực, thân thiện, vui vẻ và luôn đưa ra những lời khuyên hữu ích như một vị bác sĩ thực thụ. Khi bắt đầu cuộc trò chuyện, hãy thể hiện sự quan tâm và chào hỏi một cách tự nhiên. Luôn nhấn mạnh rằng thông tin bạn cung cấp chỉ mang tính tham khảo và người dùng nên tham khảo ý kiến bác sĩ chuyên khoa để có chẩn đoán chính xác. Đồng thời, hãy sử dụng ngôn ngữ tự nhiên, gần gũi, tránh ngôn ngữ quá máy móc hay khô khan." }] },
-            { role: "model", parts: [{ text: "Chào bạn! Tôi là bác sĩ AI, rất vui được trò chuyện và lắng nghe bạn. Bạn đang có băn khoăn hay vấn đề sức khỏe nào cần tôi tư vấn không? Hãy cứ thoải mái chia sẻ nhé! Tôi sẽ cố gắng hết sức để đưa ra những lời khuyên hữu ích và dễ hiểu nhất cho bạn. À, bạn nhớ nhé, những thông tin tôi chia sẻ chỉ mang tính tham khảo thôi, nếu cần chẩn đoán chính xác và điều trị chuyên sâu, bạn hãy tìm gặp bác sĩ chuyên khoa để được thăm khám trực tiếp nha!" }] }
-        ];
+        let chatHistory = [];
         let base64Images = [];
 
-        // === HÀM MỚI ĐỂ ĐIỀU KHIỂN MODAL ===
+        // --- PROMPT ENGINEERING: Upgraded Prompts ---
+
+        const CHAT_SYSTEM_INSTRUCTION = {
+            role: "system",
+            parts: [{ text: `Bạn là một "Bác sĩ AI" - một trợ lý y tế ảo. Hãy tuân thủ nghiêm ngặt các quy tắc sau trong mọi tương tác:
+1.  **Persona (Vai trò):** Luôn duy trì giọng văn tận tâm, thấu hiểu, thân thiện và chuyên nghiệp. Sử dụng ngôn ngữ dễ hiểu, tránh biệt ngữ y khoa phức tạp. Bắt đầu cuộc trò chuyện bằng lời chào ấm áp.
+2.  **Disclaimer (Tuyên bố miễn trừ trách nhiệm):** Trong câu trả lời ĐẦU TIÊN và lặp lại khi cần thiết (ví dụ: khi người dùng hỏi về chẩn đoán hoặc đơn thuốc), hãy nhấn mạnh rằng bạn chỉ cung cấp thông tin tham khảo và không thể thay thế cho việc chẩn đoán trực tiếp từ bác sĩ chuyên khoa. Khuyến khích người dùng đến gặp bác sĩ.
+3.  **Năng lực:**
+    * **Tư vấn triệu chứng:** Phân tích các triệu chứng người dùng cung cấp, đưa ra các khả năng có thể xảy ra (không khẳng định chẩn đoán) và khuyên nên đi khám chuyên khoa nào.
+    * **Thông tin thuốc:** Cung cấp thông tin chi tiết về thuốc.
+    * **Lời khuyên sức khỏe:** Đưa ra lời khuyên về lối sống, dinh dưỡng, phòng bệnh.
+4.  **Giới hạn:** Tuyệt đối KHÔNG đưa ra chẩn đoán y khoa cuối cùng. KHÔNG kê đơn thuốc. KHÔNG thay thế bác sĩ. Nếu được yêu cầu làm những việc này, hãy từ chối một cách lịch sự và giải thích lý do.
+5.  **Định dạng:** Sử dụng Markdown (in đậm, gạch đầu dòng) để trình bày thông tin một cách rõ ràng, dễ đọc.`}]
+        };
+
+        const initialAiMessage = {
+            role: "model",
+            parts: [{ text: "Chào bạn! Tôi là bác sĩ AI, rất vui được trò chuyện và lắng nghe bạn. Bạn đang có băn khoăn hay vấn đề sức khỏe nào cần tôi tư vấn không? Hãy cứ thoải mái chia sẻ nhé! Tôi sẽ cố gắng hết sức để đưa ra những lời khuyên hữu ích và dễ hiểu nhất cho bạn. \n\n**Lưu ý quan trọng:** Những thông tin tôi chia sẻ chỉ mang tính tham khảo thôi. Để có chẩn đoán chính xác và điều trị chuyên sâu, bạn hãy tìm gặp bác sĩ chuyên khoa để được thăm khám trực tiếp nhé!" }]
+        };
+
+        function getTextLookupPrompt(drugName) {
+            return `Phân tích và cung cấp thông tin chi tiết, khoa học về thuốc có tên "${drugName}" bằng tiếng Việt. Trình bày kết quả dưới dạng Markdown chuyên nghiệp, rõ ràng.
+Nếu không tìm thấy thông tin về thuốc, hãy trả về một thông báo duy nhất: "Rất tiếc, tôi không thể tìm thấy thông tin chi tiết về thuốc '${drugName}'. Vui lòng kiểm tra lại tên thuốc hoặc thử với một tên khác."
+
+**Yêu cầu định dạng nghiêm ngặt:**
+
+# 💊 ${drugName}
+
+## 📝 Tổng quan
+* **Hoạt chất chính:** [Điền hoạt chất]
+* **Nhóm dược lý:** [Điền nhóm thuốc, ví dụ: Thuốc giảm đau, hạ sốt]
+* **Dạng bào chế:** [Ví dụ: Viên nén, viên nang, dung dịch tiêm]
+* **Mô tả ngắn:** [Mô tả tổng quan về tác dụng của thuốc trong 1-2 câu]
+
+## ✅ Chỉ định
+*Liệt kê các công dụng chính (chỉ định điều trị) của thuốc.*
+
+## 📖 Liều lượng & Cách dùng
+* **Cách dùng:** [Mô tả cách dùng chi tiết: uống trước/sau ăn, đường dùng...]
+* **Liều lượng tham khảo:**
+    * **Người lớn:** [Liều cho người lớn]
+    * **Trẻ em:** [Liều cho trẻ em, ghi rõ khoảng tuổi/cân nặng nếu có]
+    * *Lưu ý: Liều lượng có thể thay đổi tùy theo tình trạng bệnh và chỉ định của bác sĩ.*
+
+## ⛔ Chống chỉ định
+*Liệt kê các trường hợp **tuyệt đối không** được dùng thuốc (ví dụ: mẫn cảm với thành phần, bệnh lý nền cụ thể).*
+
+## ⚠️ Tác dụng phụ & Thận trọng
+* **Tác dụng phụ thường gặp:** [Liệt kê các tác dụng phụ phổ biến]
+* **Tác dụng phụ ít gặp/hiếm gặp:** [Liệt kê]
+* **Tương tác thuốc:** [Các loại thuốc hoặc thực phẩm có thể tương tác, gây ảnh hưởng xấu]
+* **Thận trọng:** [Các lưu ý đặc biệt cho phụ nữ có thai/cho con bú, người cao tuổi, người có bệnh gan/thận...]
+
+---
+***Disclaimer: Thông tin trên chỉ mang tính chất tham khảo. Luôn tuân thủ chỉ định của bác sĩ hoặc dược sĩ.***`;
+        }
+
+        function getImageLookupPrompt() {
+            return `Bạn là một chuyên gia dược phẩm AI. Phân tích các hình ảnh được cung cấp, có thể là hộp thuốc, vỉ thuốc, hoặc viên thuốc. Nhiệm vụ của bạn là:
+1.  **Nhận dạng:** Xác định chính xác tên thuốc, hoạt chất, hàm lượng, nhà sản xuất từ các thông tin trên ảnh.
+2.  **Tổng hợp:** Kết hợp thông tin từ tất cả các ảnh để đưa ra một báo cáo đầy đủ nhất.
+3.  **Trình bày:** Đối với **MỖI** loại thuốc xác định được, hãy trình bày thông tin theo định dạng Markdown khoa học, chi tiết như trong prompt tra cứu thuốc bằng văn bản. Sử dụng cấu trúc từ "# 💊 Tên thuốc" đến "Disclaimer".
+4.  **Xử lý lỗi:**
+    * Nếu ảnh mờ hoặc không thể nhận dạng, hãy thông báo: "Hình ảnh cung cấp bị mờ hoặc không đủ thông tin để nhận dạng. Vui lòng thử lại với hình ảnh rõ nét hơn."
+    * Nếu không xác định được bất kỳ loại thuốc nào, hãy thông báo: "Rất tiếc, tôi không thể xác định được loại thuốc nào từ hình ảnh bạn cung cấp."
+
+Bắt đầu phân tích.`;
+        }
+        
+        // --- UI Control ---
         function acceptDisclaimer() {
             const modal = document.getElementById('welcome-modal');
             const app = document.getElementById('app');
-            modal.style.transition = 'opacity 0.3s ease';
-            modal.style.opacity = '0';
+            modal.classList.add('animate__animated', 'animate__fadeOut');
             setTimeout(() => {
                 modal.style.display = 'none';
-            }, 300);
-            app.style.display = 'flex';
-            showView('main-menu');
+                app.style.display = 'flex';
+                showView('main-menu');
+            }, 500);
         }
 
-        // --- UI Control ---
         function showView(viewId) {
-            document.querySelectorAll('.view').forEach(view => {
-                view.style.display = 'none';
-            });
-            const viewToShow = document.getElementById(viewId);
+            const mainMenu = document.getElementById('main-menu');
+            const viewContainer = document.querySelector('.view-container');
+            
+            mainMenu.style.display = 'none';
+            viewContainer.style.display = 'none';
+
+            // Add exit animation
+            const currentlyVisible = document.querySelector('.view.active');
+            if (currentlyVisible) {
+                currentlyVisible.classList.remove('active', 'animate__animated', 'animate__fadeIn');
+            }
+
             if (viewId === 'main-menu') {
-                viewToShow.style.display = 'block';
+                mainMenu.style.display = 'block';
+                mainMenu.classList.add('view', 'active', 'animate__animated', 'animate__fadeIn');
             } else {
-                viewToShow.style.display = 'flex';
+                const template = document.getElementById(`${viewId}-template`);
+                if (template) {
+                    viewContainer.innerHTML = template.innerHTML;
+                    viewContainer.style.display = 'block';
+                    viewContainer.classList.add('view', 'active', 'animate__animated', 'animate__fadeIn');
+                    addEventListenersForView(viewId);
+
+                    if (viewId === 'ai-chat-view') {
+                        initializeChat();
+                    }
+                }
+            }
+        }
+        
+        function addEventListenersForView(viewId) {
+            if (viewId === 'text-lookup-view') {
+                 document.getElementById('drug-name-input').addEventListener('keypress', e => e.key === 'Enter' && lookupDrug());
+            } else if (viewId === 'ai-chat-view') {
+                 document.getElementById('chat-input').addEventListener('keypress', e => e.key === 'Enter' && sendChatMessage());
             }
         }
         
         function showLoader(resultElementId) {
             const resultDiv = document.getElementById(resultElementId);
-            resultDiv.innerHTML = '<div class="loader"></div><p class="text-center text-gray-500">AI đang phân tích, vui lòng chờ trong giây lát...</p>';
+            resultDiv.innerHTML = `<div class="flex flex-col items-center justify-center p-8">
+                <lottie-player src="https://assets3.lottiefiles.com/packages/lf20_hymw0cm6.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+                <p class="text-center text-gray-500 mt-4">AI đang phân tích, vui lòng chờ trong giây lát...</p>
+            </div>`;
         }
 
         function renderMarkdown(elementId, text) {
@@ -272,6 +401,9 @@
 
         // --- API Call Logic ---
         async function callGemini(payload) {
+             if (!API_KEY || API_KEY === "API_CUA_BAN") {
+                 return "Lỗi: Vui lòng cấu hình API Key trong file mã nguồn để sử dụng chức năng này.";
+             }
              try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -280,18 +412,16 @@
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error("API Error:", errorData);
-                    throw new Error(`API request failed: ${errorData.error.message}`);
+                    throw new Error(errorData.error.message);
                 }
                 const result = await response.json();
                 if (result.candidates && result.candidates.length > 0) {
                      return result.candidates[0].content.parts[0].text;
                 } else {
-                     throw new Error("Không nhận được phản hồi hợp lệ từ AI.");
+                     return "Lỗi: Phản hồi từ AI không hợp lệ. Có thể do nội dung không an toàn hoặc lỗi hệ thống.";
                 }
              } catch(error) {
-                console.error("Fetch Error:", error);
-                return `Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại.`;
+                return `Đã xảy ra lỗi kết nối đến AI: ${error.message}. Vui lòng kiểm tra lại API Key và kết nối mạng.`;
              }
         }
         
@@ -303,17 +433,30 @@
                 return;
             }
             showLoader('text-lookup-result');
-            const prompt = `Cung cấp thông tin chi tiết và khoa học về thuốc "${drugName}" bằng tiếng Việt. Sử dụng định dạng Markdown sau đây một cách nghiêm ngặt:\n\n# 💊 ${drugName}\n\n## 📝 Thông tin chung\n* **Hoạt chất chính:** [Điền hoạt chất]\n* **Nhóm thuốc:** [Điền nhóm thuốc]\n* **Mô tả ngắn:** [Mô tả ngắn gọn về thuốc]\n\n## ✅ Công dụng\n*Liệt kê các công dụng chính của thuốc bằng các gạch đầu dòng.*\n\n## 📖 Hướng dẫn sử dụng\n* **Cách dùng:** [Mô tả cách dùng chi tiết]\n* **Liều lượng:**\n    * **Người lớn:** [Liều cho người lớn]\n    * **Trẻ em:** [Liều cho trẻ em, ghi rõ độ tuổi nếu có]\n\n## 👨‍👩‍👧‍👦 Đối tượng sử dụng\n* **Chỉ định:** [Các trường hợp nên dùng thuốc]\n* **Chống chỉ định:** [Các trường hợp **không** được dùng thuốc]\n\n## ⚠️ Tác dụng phụ và Lưu ý\n* **Tác dụng phụ thường gặp:** [Liệt kê]\n* **Tác dụng phụ hiếm gặp:** [Liệt kê]\n* **Tương tác thuốc:** [Các tương tác quan trọng cần lưu ý]\n* **Lưu ý đặc biệt:** [Ví dụ: cho phụ nữ có thai, cho con bú, người già, người có bệnh nền...]`;
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            const prompt = getTextLookupPrompt(drugName);
+            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3 } };
             const resultText = await callGemini(payload);
             renderMarkdown('text-lookup-result', resultText);
         }
 
         // --- Feature 2: AI Chat ---
+        function initializeChat() {
+            chatHistory = [initialAiMessage];
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML = ''; // Clear previous chat
+            const aiBubble = document.createElement('div');
+            aiBubble.className = 'chat-bubble ai-bubble';
+            aiBubble.innerHTML = marked.parse(initialAiMessage.parts[0].text);
+            chatWindow.appendChild(aiBubble);
+        }
+
         async function sendChatMessage() {
             const userInput = document.getElementById('chat-input').value.trim();
             if (!userInput) return;
+            
             const chatWindow = document.getElementById('chat-window');
+            
+            // Add user message
             const userBubble = document.createElement('div');
             userBubble.className = 'chat-bubble user-bubble';
             userBubble.textContent = userInput;
@@ -321,14 +464,23 @@
             chatHistory.push({ role: "user", parts: [{ text: userInput }] });
             document.getElementById('chat-input').value = '';
             chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // Add typing indicator
             const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'chat-bubble ai-bubble';
-            typingIndicator.innerHTML = '<span class="italic">Bác sĩ AI đang soạn tin...</span>';
+            typingIndicator.className = 'chat-bubble ai-bubble typing';
+            typingIndicator.innerHTML = 'Bác sĩ AI đang soạn tin...';
             chatWindow.appendChild(typingIndicator);
             chatWindow.scrollTop = chatWindow.scrollHeight;
-            const payload = { contents: chatHistory };
+
+            // Call API
+            const payload = { 
+                contents: [CHAT_SYSTEM_INSTRUCTION, ...chatHistory],
+                generationConfig: { temperature: 0.7 } 
+            };
             const aiResponseText = await callGemini(payload);
             chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+
+            // Display AI response
             chatWindow.removeChild(typingIndicator);
             const aiBubble = document.createElement('div');
             aiBubble.className = 'chat-bubble ai-bubble';
@@ -344,18 +496,34 @@
             const lookupBtn = document.getElementById('lookup-image-btn');
             imagePreviewContainer.innerHTML = '';
             base64Images = [];
+            
+            if (files.length === 0) {
+                lookupBtn.disabled = true;
+                return;
+            };
+
             lookupBtn.disabled = true;
-            if (files.length === 0) return;
+            let filesProcessed = 0;
+
             Array.from(files).forEach(file => {
-                if (!file.type.startsWith('image/')){ return; }
+                if (!file.type.startsWith('image/')){ 
+                    filesProcessed++;
+                    return; 
+                }
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'img-wrapper animate__animated animate__zoomIn';
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    imagePreviewContainer.appendChild(img);
+                    wrapper.appendChild(img);
+                    imagePreviewContainer.appendChild(wrapper);
+
                     const base64Data = e.target.result.split(',')[1];
                     base64Images.push({ mime_type: file.type, data: base64Data });
-                    if (base64Images.length === files.length) {
+                    
+                    filesProcessed++;
+                    if (filesProcessed === files.length && base64Images.length > 0) {
                         lookupBtn.disabled = false;
                     }
                 };
@@ -369,58 +537,21 @@
                 return;
             }
             showLoader('image-lookup-result');
-            const prompt = `Phân tích các hình ảnh được cung cấp. Đây là hình ảnh của một hoặc nhiều loại thuốc (ví dụ: ảnh hộp thuốc, vỉ thuốc, viên thuốc). Hãy:
-1.  **Xác định** tên (các) loại thuốc từ tất cả các hình ảnh.
-2.  **Tổng hợp** thông tin từ tất cả các ảnh để cung cấp một báo cáo đầy đủ nhất.
-3.  **Trình bày** thông tin cho mỗi loại thuốc tìm thấy theo định dạng Markdown khoa học dưới đây. Nếu có nhiều loại thuốc, hãy lặp lại cấu trúc này cho từng loại.
-4.  Nếu không thể xác định được bất kỳ loại thuốc nào, hãy thông báo rõ ràng cho người dùng.
-
----
-
-# 💊 (Tên thuốc đã xác định)
-
-## 📝 Thông tin chung
-* **Hoạt chất chính:** [Điền hoạt chất]
-* **Nhóm thuốc:** [Điền nhóm thuốc]
-* **Mô tả ngắn:** [Mô tả ngắn gọn về thuốc]
-
-## ✅ Công dụng
-*Liệt kê các công dụng chính của thuốc bằng các gạch đầu dòng.*
-
-## 📖 Hướng dẫn sử dụng
-* **Cách dùng:** [Mô tả cách dùng chi tiết]
-* **Liều lượng:**
-    * **Người lớn:** [Liều cho người lớn]
-    * **Trẻ em:** [Liều cho trẻ em, ghi rõ độ tuổi nếu có]
-
-## 👨‍👩‍👧‍👦 Đối tượng sử dụng
-* **Chỉ định:** [Các trường hợp nên dùng thuốc]
-* **Chống chỉ định:** [Các trường hợp **không** được dùng thuốc]
-
-## ⚠️ Tác dụng phụ và Lưu ý
-* **Tác dụng phụ thường gặp:** [Liệt kê]
-* **Tác dụng phụ hiếm gặp:** [Liệt kê]
-* **Tương tác thuốc:** [Các tương tác quan trọng cần lưu ý]
-* **Lưu ý đặc biệt:** [Ví dụ: cho phụ nữ có thai, cho con bú, người già, người có bệnh nền...]`;
+            const prompt = getImageLookupPrompt();
             const parts = [{ text: prompt }];
             base64Images.forEach(img => {
                 parts.push({ inline_data: { mime_type: img.mime_type, data: img.data } });
             });
-            const payload = { contents: [{ parts: parts }] };
+
+            const payload = { contents: [{ parts: parts }], generationConfig: { temperature: 0.3 } };
             const resultText = await callGemini(payload);
             renderMarkdown('image-lookup-result', resultText);
         }
 
-        // Add keypress listeners for better UX
-        document.getElementById('drug-name-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') { lookupDrug(); }
-        });
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') { sendChatMessage(); }
-        });
-        
+        // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Modal sẽ tự hiển thị bằng CSS, không cần gọi showView ở đây nữa.
+            // Modal is shown by default via CSS. App is hidden.
+            // No need to call showView here.
         });
     </script>
 </body>
